@@ -1,7 +1,6 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/IndustrialTelemetry.Core/IndustrialTelemetry.Core.csproj" />
-    <Project Path="src/IndustrialTelemetry.Api/IndustrialTelemetry.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/IndustrialTelemetry.Tests/IndustrialTelemetry.Tests.csproj" />

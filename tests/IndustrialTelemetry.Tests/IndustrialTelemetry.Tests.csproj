@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\IndustrialTelemetry.Core\IndustrialTelemetry.Core.csproj" />
-    <ProjectReference Include="..\..\src\IndustrialTelemetry.Api\IndustrialTelemetry.Api.csproj" />
   </ItemGroup>
 
 </Project>
