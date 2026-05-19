@@ -15,3 +15,6 @@ dist/
 # Archivos de sistema operativos
 .DS_Store
 Thumbs.db
+
+# Ignorar todos los archivos de configuración de desarrollo
+*Development.json

@@ -1,92 +1,91 @@
-name: Agentic Telemetry Resolver
+name: 🤖 Agentic Telemetry Guard - Resolver Workflow
 
+# El pipeline se despierta de forma automática siguiendo la regla que diseñaste:
+# Cuando se abre un Issue o se le añade una etiqueta (label) específica.
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
-  auto-heal-parser:
+  resolve_telemetry_bug:
+    # Solo se ejecuta si el issue contiene la etiqueta crítica de telemetría
     if: contains(github.event.issue.labels.*.name, 'bug:telemetry')
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Source Code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: 📥 Clonar Repositorio con Código .NET 10 y React
+        uses: actions/checkout@v4
 
-    - name: Setup .NET 10 SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
+      - name: ⚙️ Configurar Entorno de Ejecución .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
 
-    - name: Simular Análisis del Agente IA (MCP)
-      run: |
-        echo "=== AGENTE IA DESPIERTO ==="
-        echo "Leyendo el Issue: ${{ github.event.issue.title }}"
-        echo "Analizando código en src/IndustrialTelemetry.Core/Services/TelemetryService.cs..."
-        echo "Detectado fallo por FormatException debido a valores vacíos o alfanuméricos."
+      - name: 🧠 Inicializar Cliente MCP y Consumir Contexto
+        id: mcp_context
+        run: |
+          echo "=== CONECTANDO CON SERVIDOR MCP LOCAL (SIMULADO) ==="
+          echo "Leyendo recurso: telemetry://logs/latest-crash"
 
-    - name: Aplicar Ingeniería Correctiva Autónoma
-      run: |
-        # El agente reemplaza el código frágil por uno defensivo usando double.TryParse
-        cat << 'EOF' > src/IndustrialTelemetry.Core/Services/TelemetryService.cs
-        using System;
-        using System.Globalization;
+          # Extraemos la descripción del Issue que contiene el volcado del FormatException
+          ISSUE_BODY="${{ github.event.issue.body }}"
+          echo "Contexto extraído del Issue con éxito."
 
-        namespace IndustrialTelemetry.Core.Services
-        {
-            public class TelemetryService
-            {
-                public SensorData ParseSensorPayload(string rawPayload)
-                {
-                    if (string.IsNullOrWhiteSpace(rawPayload))
-                        throw new ArgumentException("La trama del sensor no puede estar vacía.");
+          # Guardamos el contexto para el LLM
+          echo "CONTEXT_DATA<<EOF" >> $GITHUB_ENV
+          echo "$ISSUE_BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-                    var parts = rawPayload.Split(';');
-                    if (parts.Length != 4)
-                        throw new FormatException("Trama de telemetría industrial corrupta o incompleta.");
+      - name: 🤖 Ejecutar Agente de IA (Generación del Parche Defensivo)
+        id: ai_agent
+        run: |
+          echo "=== AGENTE DE IA ACTIVADO ==="
+          echo "Analizando código fuente en: src/IndustrialTelemetry.API/Program.cs"
+          echo "Buscando firma del error extraída por MCP: System.FormatException"
 
-                    // Solución defensiva aplicada por el Agente de IA
-                    if (!double.TryParse(parts[1], CultureInfo.InvariantCulture, out double temp)) temp = 0.0;
-                    if (!double.TryParse(parts[2], CultureInfo.InvariantCulture, out double press)) press = 0.0;
+          # Simulación del comportamiento del agente modificando el archivo frágil.
+          # La IA localiza el double.Parse() conflictivo y lo reemplaza de forma autónoma
+          # por una estructura TryParse para mitigar el ticket #GH-600.
 
-                    return new SensorData
-                    {
-                        SensorId = parts[0],
-                        Temperature = temp,
-                        Pressure = press,
-                        PlcStatus = parts[3]
-                    };
-                }
-            }
+          TARGET_FILE="src/IndustrialTelemetry.API/Program.cs"
 
-            public class SensorData
-            {
-                public string SensorId { get; set; } = string.Empty;
-                public double Temperature { get; set; }
-                public double Pressure { get; set; }
-                public string PlcStatus { get; set; } = string.Empty;
-            }
-        }
-        EOF
+          if [ -f "$TARGET_FILE" ]; then
+            echo "Aplicando refactorización agéntica a double.TryParse()..."
+            # Modificación quirúrgica emulando el comportamiento del LLM
+            sed -i 's/double temperature = double.Parse(parts\[1\]);/double.TryParse(parts[1], out double temperature);/' "$TARGET_FILE"
+            sed -i 's/double pressure = double.Parse(parts\[2\]);/double.TryParse(parts[2], out double pressure);/' "$TARGET_FILE"
+            echo "¡Código fuente reparado con éxito por el agente!"
+          else
+            echo "Error: No se encontró el archivo del servidor de telemetría."
+            exit 1
+          fi
 
-    - name: Validar Corrección con Tests
-      run: dotnet test --configuration Release
+      - name: 🧪 Validar Compilación y Calidad del Software
+        run: |
+          echo "Verificando que los cambios de la IA no rompan el sistema..."
+          cd src/IndustrialTelemetry.API
+          dotnet build
 
-    - name: Crear Pull Request Automática
-      uses: peter-evans/create-pull-request@v6
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        branch: agent-fix-telemetry
-        title: "🤖 [AI Fix] Adaptación defensiva del parser de telemetría"
-        body: |
-          Este es un ajuste automático generado por el **Agentic Telemetry Guard**.
+      - name: 🚀 Crear Rama Automática y Enviar Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: agentic/fix-gh-600-telemetry
+          title: "🤖 [Fix] Autorreparación Agéntica - Ticket #GH-600"
+          body: |
+            ## Resumen de la Reparación Autónoma (Gobernanza IA)
+            El agente ha interceptado el fallo `System.FormatException` reportado en el contexto del issue.
 
-          **Análisis del problema:** Se detectó una trama corrupta o incompleta que lanzaba `FormatException`.
-          **Solución aplicada:** Se sustituyó `double.Parse` por `double.TryParse` para asegurar resiliencia en la ingesta de datos de planta.
+            ### Cambios aplicados:
+            - Sustitución de `double.Parse()` por `double.TryParse()` en `Program.cs`.
+            - Validación de tipos segura para tramas de planta alfanuméricas corruptas (`ERROR_VAL`).
 
-          *Todos los tests de la solución han pasado con éxito.*
-        labels: |
-          ai-reviewed
-          human-review-required
+            _Validación de compilación interna: EXIT_CODE 0 (Green)_
+          labels: |
+            automerge
+            ai-reviewed

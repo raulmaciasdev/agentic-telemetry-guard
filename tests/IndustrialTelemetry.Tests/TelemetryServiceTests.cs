@@ -2,6 +2,8 @@
 using System;
 using Xunit;
 using IndustrialTelemetry.Core.Services;
+using IndustrialTelemetry.API;
+using Microsoft.AspNetCore.Http.HttpResults; // Para TelemetryRequest
 
 namespace IndustrialTelemetry.Tests
 {
@@ -39,6 +41,23 @@ namespace IndustrialTelemetry.Tests
             // Act & Assert
             // Comprobamos que el parser lanza la excepción que identificaste correctamente
             Assert.Throws<FormatException>(() => _service.ParseSensorPayload(corruptPayload));
+        }
+
+        [Fact]
+        public void Validate_CorruptPayload_ReturnsBadRequest()
+        {
+            // ARRANGE
+            var request = new TelemetryRequest("SENSOR_01;24.0;ERROR_VAL;RUNNING");
+
+            // ACT
+            var result = TelemetryLogic.Validate(request);
+
+            // ASSERT: Verifica que el resultado implementa la interfaz IBadRequest
+            // Esto es mucho más robusto que IsType
+            Assert.IsAssignableFrom<Microsoft.AspNetCore.Http.IResult>(result);
+
+            // Opcional: Verifica el nombre del tipo para confirmar que es un error
+            Assert.Contains("BadRequest", result.GetType().Name);
         }
     }
 }
