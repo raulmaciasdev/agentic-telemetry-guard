@@ -1,0 +1,17 @@
+# Carpetas de compilación de .NET
+bin/
+obj/
+
+# Carpetas de dependencias de Node/React
+node_modules/
+dist/
+
+# Archivos de configuración local del editor
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Archivos de sistema operativos
+.DS_Store
+Thumbs.db

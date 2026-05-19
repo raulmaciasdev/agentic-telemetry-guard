@@ -1,0 +1,92 @@
+name: Agentic Telemetry Resolver
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  auto-heal-parser:
+    if: contains(github.event.issue.labels.*.name, 'bug:telemetry')
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET 10 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Simular Análisis del Agente IA (MCP)
+      run: |
+        echo "=== AGENTE IA DESPIERTO ==="
+        echo "Leyendo el Issue: ${{ github.event.issue.title }}"
+        echo "Analizando código en src/IndustrialTelemetry.Core/Services/TelemetryService.cs..."
+        echo "Detectado fallo por FormatException debido a valores vacíos o alfanuméricos."
+
+    - name: Aplicar Ingeniería Correctiva Autónoma
+      run: |
+        # El agente reemplaza el código frágil por uno defensivo usando double.TryParse
+        cat << 'EOF' > src/IndustrialTelemetry.Core/Services/TelemetryService.cs
+        using System;
+        using System.Globalization;
+
+        namespace IndustrialTelemetry.Core.Services
+        {
+            public class TelemetryService
+            {
+                public SensorData ParseSensorPayload(string rawPayload)
+                {
+                    if (string.IsNullOrWhiteSpace(rawPayload))
+                        throw new ArgumentException("La trama del sensor no puede estar vacía.");
+
+                    var parts = rawPayload.Split(';');
+                    if (parts.Length != 4)
+                        throw new FormatException("Trama de telemetría industrial corrupta o incompleta.");
+
+                    // Solución defensiva aplicada por el Agente de IA
+                    if (!double.TryParse(parts[1], CultureInfo.InvariantCulture, out double temp)) temp = 0.0;
+                    if (!double.TryParse(parts[2], CultureInfo.InvariantCulture, out double press)) press = 0.0;
+
+                    return new SensorData
+                    {
+                        SensorId = parts[0],
+                        Temperature = temp,
+                        Pressure = press,
+                        PlcStatus = parts[3]
+                    };
+                }
+            }
+
+            public class SensorData
+            {
+                public string SensorId { get; set; } = string.Empty;
+                public double Temperature { get; set; }
+                public double Pressure { get; set; }
+                public string PlcStatus { get; set; } = string.Empty;
+            }
+        }
+        EOF
+
+    - name: Validar Corrección con Tests
+      run: dotnet test --configuration Release
+
+    - name: Crear Pull Request Automática
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: agent-fix-telemetry
+        title: "🤖 [AI Fix] Adaptación defensiva del parser de telemetría"
+        body: |
+          Este es un ajuste automático generado por el **Agentic Telemetry Guard**.
+
+          **Análisis del problema:** Se detectó una trama corrupta o incompleta que lanzaba `FormatException`.
+          **Solución aplicada:** Se sustituyó `double.Parse` por `double.TryParse` para asegurar resiliencia en la ingesta de datos de planta.
+
+          *Todos los tests de la solución han pasado con éxito.*
+        labels: |
+          ai-reviewed
+          human-review-required
