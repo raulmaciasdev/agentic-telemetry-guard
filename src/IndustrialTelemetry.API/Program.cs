@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 using System;
 
-namespace IndustrialTelemetry.API
+namespace IndustrialTelemetry.Api
 {
     public class Program
     {

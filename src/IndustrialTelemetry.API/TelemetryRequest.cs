@@ -1,5 +1,5 @@
 
-namespace IndustrialTelemetry.API
+namespace IndustrialTelemetry.Api
 {
     public record TelemetryRequest(string Payload);
 }

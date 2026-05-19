@@ -2,7 +2,7 @@
 using System;
 using Xunit;
 using IndustrialTelemetry.Core.Services;
-using IndustrialTelemetry.API;
+using IndustrialTelemetry.Api;
 using Microsoft.AspNetCore.Http.HttpResults; // Para TelemetryRequest
 
 namespace IndustrialTelemetry.Tests

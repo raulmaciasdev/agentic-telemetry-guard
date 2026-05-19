@@ -1,4 +1,4 @@
-namespace IndustrialTelemetry.API
+namespace IndustrialTelemetry.Api
 {
     public static class TelemetryLogic
     {

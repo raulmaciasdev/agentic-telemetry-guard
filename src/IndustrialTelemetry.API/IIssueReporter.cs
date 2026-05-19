@@ -1,6 +1,6 @@
 using Octokit;
 
-namespace IndustrialTelemetry.API
+namespace IndustrialTelemetry.Api
 {
 
     public interface IIssueReporter
