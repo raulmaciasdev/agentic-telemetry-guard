@@ -25,7 +25,7 @@ namespace IndustrialTelemetry.Api
             var githubToken = builder.Configuration["GitHub:Token"];
 
             // Registramos el servicio como un Singleton o Scoped
-            builder.Services.AddSingleton<IIssueReporter>(new GitHubIssueReporter(githubToken));
+            _ = builder.Services.AddSingleton<IIssueReporter>(new GitHubIssueReporter(githubToken));
 
             var app = builder.Build();
 
