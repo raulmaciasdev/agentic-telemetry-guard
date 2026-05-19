@@ -1,0 +1,38 @@
+name: Deploy Telemetry MCP Server
+
+# El pipeline se activa automáticamente cada vez que subes cambios a la rama 'main'
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/telemetry-mcp-server/**' # Solo se dispara si cambia el código del MCP
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Descargar el código del repositorio en la máquina virtual de GitHub
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Configurar el entorno de Node.js para validar que compila correctamente
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: 'src/telemetry-mcp-server/package-lock.json'
+
+    # 3. Instalar dependencias y comprobar el build de TypeScript
+    - name: Install and Build
+      run: |
+        cd src/telemetry-mcp-server
+        npm ci
+        npm run build
+
+    # 4. Construir la imagen Docker usando el Dockerfile que creamos
+    - name: Build Docker Image
+      run: |
+        cd src/telemetry-mcp-server
+        docker build -t industrial-telemetry-mcp:latest .
